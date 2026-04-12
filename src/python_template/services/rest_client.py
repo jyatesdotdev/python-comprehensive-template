@@ -1,13 +1,20 @@
 import asyncio
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import httpx
+
+_HTTP_CLIENT_ERROR_MIN = 400
+_HTTP_SERVER_ERROR_MIN = 500
+_HTTP_TOO_MANY_REQUESTS = 429
 
 
 class RESTClientError(Exception):
     """Base exception for RESTClient errors."""
 
-    def __init__(self, message: str, status_code: int | None = None, detail: Any = None):
+    def __init__(
+        self, message: str, status_code: int | None = None, detail: Any = None
+    ):
         self.message = message
         self.status_code = status_code
         self.detail = detail
@@ -15,7 +22,7 @@ class RESTClientError(Exception):
 
 
 class RESTClient:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         base_url: str,
         transport: httpx.BaseTransport | None = None,
@@ -52,7 +59,12 @@ class RESTClient:
                 return response.json()
             except httpx.HTTPStatusError as e:
                 # Don't retry on most 4xx errors
-                if 400 <= e.response.status_code < 500 and e.response.status_code != 429:
+                if (
+                    _HTTP_CLIENT_ERROR_MIN
+                    <= e.response.status_code
+                    < _HTTP_SERVER_ERROR_MIN
+                    and e.response.status_code != _HTTP_TOO_MANY_REQUESTS
+                ):
                     detail = ""
                     if "application/json" in e.response.headers.get("content-type", ""):
                         try:
@@ -115,6 +127,4 @@ class RESTClient:
         path: str,
         headers: dict[str, str] | None = None,
     ) -> Any:
-        return await self._request_with_retry(
-            self.client.delete, path, headers=headers
-        )
+        return await self._request_with_retry(self.client.delete, path, headers=headers)

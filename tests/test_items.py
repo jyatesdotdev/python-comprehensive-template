@@ -21,9 +21,12 @@ async def init_db():
 async def test_create_item():
     transport = ASGITransport(app=app)
     headers = {settings.API_KEY_NAME: settings.API_KEY}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=headers
+    ) as ac:
         response = await ac.post(
-            "/api/v1/items/", json={"name": "Test Item", "description": "Test Description"}
+            "/api/v1/items/",
+            json={"name": "Test Item", "description": "Test Description"},
         )
     assert response.status_code == 200
     data = response.json()
@@ -35,9 +38,13 @@ async def test_create_item():
 async def test_read_items():
     transport = ASGITransport(app=app)
     headers = {settings.API_KEY_NAME: settings.API_KEY}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=headers
+    ) as ac:
         # Create an item first to have something to list
-        await ac.post("/api/v1/items/", json={"name": "Item 1", "description": "Desc 1"})
+        await ac.post(
+            "/api/v1/items/", json={"name": "Item 1", "description": "Desc 1"}
+        )
         response = await ac.get("/api/v1/items/")
     assert response.status_code == 200
     data = response.json()
@@ -52,12 +59,18 @@ async def test_read_items():
 async def test_update_item():
     transport = ASGITransport(app=app)
     headers = {settings.API_KEY_NAME: settings.API_KEY}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=headers
+    ) as ac:
         # Create
-        res = await ac.post("/api/v1/items/", json={"name": "To Update", "description": "desc"})
+        res = await ac.post(
+            "/api/v1/items/", json={"name": "To Update", "description": "desc"}
+        )
         item_id = res.json()["id"]
         # Update
-        response = await ac.put(f"/api/v1/items/{item_id}", json={"name": "Updated Name"})
+        response = await ac.put(
+            f"/api/v1/items/{item_id}", json={"name": "Updated Name"}
+        )
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Name"
 
@@ -66,9 +79,13 @@ async def test_update_item():
 async def test_delete_item():
     transport = ASGITransport(app=app)
     headers = {settings.API_KEY_NAME: settings.API_KEY}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=headers
+    ) as ac:
         # Create
-        res = await ac.post("/api/v1/items/", json={"name": "To Delete", "description": "desc"})
+        res = await ac.post(
+            "/api/v1/items/", json={"name": "To Delete", "description": "desc"}
+        )
         item_id = res.json()["id"]
         # Delete
         response = await ac.delete(f"/api/v1/items/{item_id}")
@@ -80,7 +97,9 @@ async def test_delete_item():
 async def test_item_not_found():
     transport = ASGITransport(app=app)
     headers = {settings.API_KEY_NAME: settings.API_KEY}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=headers
+    ) as ac:
         response = await ac.get("/api/v1/items/999")
     assert response.status_code == 404
     assert response.json()["detail"] == "Item not found"

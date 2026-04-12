@@ -1,7 +1,6 @@
-
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
 
 from python_template.models.item import Item
 from python_template.schemas.item import ItemCreate, ItemUpdate

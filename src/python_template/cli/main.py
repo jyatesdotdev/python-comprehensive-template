@@ -1,5 +1,5 @@
-
 import asyncio
+
 import typer
 import uvicorn
 
@@ -29,7 +29,7 @@ def hello(name: str = typer.Argument(..., help="The name of the person to greet.
 def info(
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Enable verbose output."
-    )
+    ),
 ):
     """
     Display information about this template.
@@ -59,7 +59,7 @@ def serve(
 def check_health(
     base_url: str = typer.Option(
         "http://localhost:8000", help="The base URL of the API to check."
-    )
+    ),
 ):
     """
     Check the health of the API using the REST client.
@@ -130,7 +130,9 @@ def items_list(
                 else:
                     typer.echo(f"Found {total} items:")
                     for item in items:
-                        typer.echo(f"[{item.get('id')}] {item.get('name')}: {item.get('description')}")
+                        typer.echo(
+                            f"[{item.get('id')}] {item.get('name')}: {item.get('description')}"
+                        )
         except Exception as e:
             logger.error(f"Fetching items failed: {e}")
             typer.echo(f"Error: {e}", err=True)
@@ -147,8 +149,9 @@ def db_init():
     """
     Initialize the database by running all migrations.
     """
-    from alembic import command
-    from alembic.config import Config
+    from alembic.config import Config  # noqa: PLC0415
+
+    from alembic import command  # noqa: PLC0415
 
     logger.info("Initializing database with migrations...")
     try:

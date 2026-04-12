@@ -1,5 +1,5 @@
-
 from math import ceil
+
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,16 +33,12 @@ async def read_items(
     skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
 ):
     items, total = await crud_item.get_items(db, skip=skip, limit=limit)
-    
+
     page = (skip // limit) + 1
     pages = ceil(total / limit) if total > 0 else 0
-    
+
     return PaginatedResponse(
-        items=items,
-        total=total,
-        page=page,
-        size=limit,
-        pages=pages
+        items=items, total=total, page=page, size=limit, pages=pages
     )
 
 

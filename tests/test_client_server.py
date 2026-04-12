@@ -19,13 +19,18 @@ async def test_rest_client_with_api():
     headers = {settings.API_KEY_NAME: settings.API_KEY}
 
     # Use RESTClient with the real app's transport
-    async with RESTClient(base_url="http://test", transport=transport, headers=headers) as client:
+    async with RESTClient(
+        base_url="http://test", transport=transport, headers=headers
+    ) as client:
         # Test health check (no auth needed)
         health = await client.get("/health")
         assert health["status"] == "healthy"
 
         # Create an item (auth needed)
-        new_item = await client.post("/api/v1/items/", data={"name": "Integration Item", "description": "From client"})
+        new_item = await client.post(
+            "/api/v1/items/",
+            data={"name": "Integration Item", "description": "From client"},
+        )
         assert new_item["name"] == "Integration Item"
         item_id = new_item["id"]
 
@@ -39,7 +44,9 @@ async def test_rest_client_with_api():
         assert item["id"] == item_id
 
         # Update item
-        updated = await client.put(f"/api/v1/items/{item_id}", data={"name": "Updated Integration"})
+        updated = await client.put(
+            f"/api/v1/items/{item_id}", data={"name": "Updated Integration"}
+        )
         assert updated["name"] == "Updated Integration"
 
         # Delete item

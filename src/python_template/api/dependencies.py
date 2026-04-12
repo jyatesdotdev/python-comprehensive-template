@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
 from python_template.core.config import settings

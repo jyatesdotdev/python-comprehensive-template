@@ -11,7 +11,6 @@ from python_template.core.config import settings
 from python_template.core.logger import logger, setup_logging
 from python_template.db.session import engine
 
-
 setup_logging()
 
 

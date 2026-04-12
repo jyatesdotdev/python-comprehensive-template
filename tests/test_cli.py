@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 import respx
 from httpx import Response
 from typer.testing import CliRunner
@@ -56,9 +57,13 @@ def test_check_health_command_error():
 @respx.mock
 def test_items_create_command():
     respx.post("http://localhost:8000/api/v1/items/").mock(
-        return_value=Response(201, json={"id": 1, "name": "Test Item", "description": "Desc"})
+        return_value=Response(
+            201, json={"id": 1, "name": "Test Item", "description": "Desc"}
+        )
     )
-    result = runner.invoke(app, ["items", "create", "Test Item", "--description", "Desc"])
+    result = runner.invoke(
+        app, ["items", "create", "Test Item", "--description", "Desc"]
+    )
     assert result.exit_code == 0
     assert "Item created successfully: ID 1" in result.stdout
 
