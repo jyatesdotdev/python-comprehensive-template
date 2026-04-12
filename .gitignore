@@ -152,5 +152,11 @@ cython_debug/
 # VSCode
 .vscode/
 
+# Dist-info (site-packages metadata)
+*.dist-info/
+
+# Ruff
+.ruff_cache/
+
 # Project specific
-test.db
+*.db
