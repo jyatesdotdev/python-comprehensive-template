@@ -1,0 +1,8 @@
+{
+  "active": true,
+  "current_iteration": 29,
+  "max_iterations": 50,
+  "completion_promise": "",
+  "original_prompt": "Create a Python project in the current directory that will be used as a template for starting new projects, and provides best practices and documentation on how to add new features. Include examples and POCs for the following: [API, CLI tool, CRUD, WebSocket, SSE, RESTFUL client/server], utilizing best practices and libraries as needed. Each iteration should do one thing, log it in log.md, and add any tasks that still need to be done in tasks.md.",
+  "started_at": "2026-04-11T20:07:14Z"
+}

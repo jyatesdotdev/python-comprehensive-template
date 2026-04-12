@@ -1,0 +1,49 @@
+# Project Tasks
+
+- [x] Initialize Python project structure (pyproject.toml, README.md, src directory)
+- [x] Implement CLI tool example
+- [x] Implement API example (using FastAPI or similar)
+- [x] Implement CRUD functionality
+- [x] Implement WebSocket example
+- [x] Implement SSE (Server-Sent Events) example
+- [x] Implement RESTFUL client example
+- [x] Add comprehensive documentation on best practices and adding new features
+- [x] Add testing framework and example tests
+- [x] Add linting and formatting configuration (e.g., ruff, black)
+- [x] Add CI/CD configuration (e.g., GitHub Actions)
+- [x] Review existing code for improvements, update with new tasks if needed.
+- [x] Review documentation for improvements, update with new tasks if needed.
+- [x] Ensure there are examples and tutorials added to bring new features and tests into the project.
+- [x] Create `.env.example` template for configuration.
+- [x] Update documentation with details on configuration management.
+- [x] Implement a standardized logging system.
+- [x] Implement global exception handling in the API.
+- [x] Update `adding-features.md` with logging and exception handling details.
+- [x] Add `.gitignore` file.
+- [x] Add `Dockerfile` and `docker-compose.yml` for containerization.
+- [x] Add `Makefile` for common development tasks.
+- [x] Final project verification and testing.
+- [x] Verify project integrity and final review.
+- [x] Re-enable SSE tests in CI and optimize test duration.
+- [x] Migrate `items.py` to use `APIError` instead of `HTTPException` for consistent error format.
+- [x] Enhance health check endpoint to verify database connectivity.
+- [x] Add CLI command to check API health using REST client.
+- [x] Configure CORS middleware for the API.
+- [x] Add Background Tasks example to the API.
+- [x] Document Background Tasks usage.
+- [x] Add test coverage reporting.
+- [x] Final review and project finalization.
+- [x] Ensure all testing dependencies (`pytest-asyncio`, `respx`) are explicitly listed in `pyproject.toml`.
+- [x] Implement CLI commands for CRUD operations (`items create`, `items list`) to demonstrate API interaction.
+- [x] Implement CLI `serve` command to start the API server.
+- [x] Document new CLI commands in `docs/adding-features.md`.
+- [x] Add unit test for the `serve` command.
+- [x] Document architecture and how to run POCs in `docs/architecture.md`.
+- [x] Add final Makefile convenience targets (`check`, `serve`).
+- [x] Add database management CLI commands (e.g., `db init` to create tables).
+- [x] Set up Alembic for database migrations.
+- [x] Add example of a paginated response with metadata.
+- [x] Add simple API Key authentication POC.
+- [x] Add more robust error handling and retry logic to RESTClient.
+- [x] Update documentation to reflect new features (Alembic, Pagination, Auth).
+- [x] Add syntax checking (via ruff or the like) to ensure consistent code quality.

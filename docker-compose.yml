@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: fastapi dev src/python_template/api/main.py --host 0.0.0.0 --port 8000
+
+  db_viewer:
+    image: adminer
+    ports:
+      - "8080:8080"
