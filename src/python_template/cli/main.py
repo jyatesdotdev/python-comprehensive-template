@@ -44,7 +44,7 @@ def info(
 
 @app.command()
 def serve(
-    host: str = typer.Option("0.0.0.0", help="The host to bind the server to."),
+    host: str = typer.Option("0.0.0.0", help="The host to bind the server to."),  # noqa: S104
     port: int = typer.Option(8000, help="The port to bind the server to."),
     reload: bool = typer.Option(True, help="Enable auto-reload on code changes."),
 ):
