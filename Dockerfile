@@ -22,8 +22,8 @@ ENV PATH="/root/.cargo/bin:$PATH"
 # Copy the project files
 COPY . .
 
-# Install dependencies using uv
-RUN uv sync --frozen
+# Install runtime dependencies only (dev group holds test/lint tooling)
+RUN uv sync --frozen --no-dev
 
 # Expose the port
 EXPOSE 8000
