@@ -5,6 +5,12 @@ conform?", `security.yml` answers "is it safe?". Keep the split — security
 scans are also on a weekly cron (Monday 06:00 UTC) to catch *newly disclosed*
 CVEs in unchanged code, which a test-only workflow would never re-run for.
 
+Beware: GitHub **auto-disables cron-triggered workflows after ~60 days of
+repo inactivity**, silently. This happened to `security.yml` once (July 2026);
+it had to be re-enabled with `gh workflow enable security.yml`. Its
+`workflow_dispatch` trigger exists partly for that reason — manual runs count
+as activity and make the workflow testable without a push.
+
 ## ci.yml
 
 Lint (`ruff check` **and** `ruff format --check`) plus pytest. Note pytest
@@ -34,7 +40,11 @@ production Docker image opts out with `--no-dev`.
 
 ## Editing rules
 
-Actions are pinned to major versions (`@v4`, `@v5`) except
-`trivy-action@master`; prefer pinning if you touch that line. Workflows run
-on pushes and PRs to `main` only — new long-lived branches need to be added
-to the `branches:` filters or they get no CI.
+Actions are pinned to moving major tags (`@v7`, `@v6`), except trivy-action,
+which is pinned to an exact release because it publishes no moving major tag
+(it was previously `@master`, i.e. unpinned — don't go back to that). When
+bumping, verify the tag actually exists (`gh api repos/<owner>/<repo>/git/
+matching-refs/tags/v<N>`) rather than assuming; majors move at different
+speeds per action. Workflows run on pushes and PRs to `main` only — new
+long-lived branches need to be added to the `branches:` filters or they get
+no CI.

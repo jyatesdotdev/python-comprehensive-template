@@ -7,6 +7,7 @@ on:
     branches: [main]
   schedule:
     - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
+  workflow_dispatch:  # Manual runs; also guards against scheduled-workflow auto-disable
 
 permissions:
   security-events: write
@@ -16,15 +17,15 @@ jobs:
   dependency-audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        uses: astral-sh/setup-uv@v7
 
       - name: Audit dependencies with pip-audit
         run: |
@@ -35,10 +36,10 @@ jobs:
   sast:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -49,7 +50,7 @@ jobs:
         run: bandit -r src/ -f json -o bandit-report.json || true
 
       - name: Upload bandit report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bandit-report
           path: bandit-report.json
@@ -62,10 +63,10 @@ jobs:
   trivy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -73,7 +74,7 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
