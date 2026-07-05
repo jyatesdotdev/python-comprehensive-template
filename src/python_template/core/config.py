@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     DESCRIPTION: str = "A comprehensive Python project template."
 
     DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"
+    DB_ECHO: bool = False
 
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
