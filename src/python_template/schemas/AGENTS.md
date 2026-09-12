@@ -17,6 +17,9 @@ Every resource gets four schemas, and the split encodes real API semantics:
   `exclude_unset=True` in `crud/`, is what makes updates partial: a client
   can send only the fields it wants to change. Making a field required on
   the update schema silently forces clients to resend everything.
+  Fields that are non-null in the DB (e.g. `Item.name`) must reject explicit
+  JSON `null` on update — omitted is fine, `null` is a 422, not a 500 at
+  response serialization.
 - `X` (read) — what responses contain, including server-generated fields
   (`id`). Carries `model_config = ConfigDict(from_attributes=True)`, which is
   what allows FastAPI to build it from an ORM object; forget it and every

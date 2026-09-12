@@ -34,26 +34,26 @@ The project uses SQLite by default with SQLAlchemy as the ORM and Alembic for mi
 ### 4. Authentication (API Key)
 The API includes a simple API Key authentication POC.
 - **Configuration:** `API_KEY` and `API_KEY_NAME` in `core/config.py`.
-- **Default Key:** `default-dev-key`
-- **Protected Endpoints:** All `/api/v1/items/` endpoints require the `X-API-KEY` header.
-- **Usage:** The CLI automatically sends the key from settings.
+- **Default Key:** `default-dev-key` (dev convenience; override `API_KEY` outside local use).
+- **Protected Endpoints:** `/api/v1/items/`, `/api/v1/sse`, and `/api/v1/ws/` require the key. `/` and `/health` do not.
+- **Usage:** The CLI automatically sends the key from settings. HTTP clients send `X-API-KEY`; browsers on WebSocket use `?api_key=`.
 
 ### 5. WebSocket
 A basic chat-like WebSocket POC.
-- **Endpoint:** `ws://127.0.0.1:8000/api/v1/ws/{client_id}`
+- **Endpoint:** `ws://127.0.0.1:8000/api/v1/ws/{client_id}?api_key=default-dev-key`
 - **Test:** Use a tool like `websocat` or a simple browser script:
   ```javascript
-  const ws = new WebSocket("ws://127.0.0.1:8000/api/v1/ws/1");
+  const ws = new WebSocket("ws://127.0.0.1:8000/api/v1/ws/1?api_key=default-dev-key");
   ws.onmessage = (event) => console.log(event.data);
   ws.send("Hello!");
   ```
 
-### 5. SSE (Server-Sent Events)
+### 6. SSE (Server-Sent Events)
 A real-time event stream POC.
 - **Endpoint:** `http://127.0.0.1:8000/api/v1/sse`
-- **Test:** `curl http://127.0.0.1:8000/api/v1/sse` or open the URL in a browser.
+- **Test:** `curl -H "X-API-KEY: default-dev-key" http://127.0.0.1:8000/api/v1/sse`
 
-### 6. RESTFUL Client/Server Interaction
+### 7. RESTFUL Client/Server Interaction
 The project demonstrates how a client (CLI) can interact with a server (API) using an asynchronous client (`httpx`).
 - **Client Implementation:** `src/python_template/services/rest_client.py`.
 - **Usage Example:** `src/python_template/cli/main.py` uses the `RESTClient` to call the API.

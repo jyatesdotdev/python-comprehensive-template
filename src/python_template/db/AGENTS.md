@@ -27,6 +27,6 @@ tables look like lives in `models/`, and what we do with them lives in `crud/`.
 ## If you change the database
 
 Swapping SQLite for Postgres should require only a `DATABASE_URL` change
-(e.g. `postgresql+asyncpg://...`) plus the driver dependency. Keep it that
-way: no SQLite-specific SQL in `crud/`, no dialect-specific column types in
-`models/` without a fallback.
+(e.g. `postgresql+asyncpg://...`) plus adding the `asyncpg` dependency — it is
+not bundled. Keep it that way: no SQLite-specific SQL in `crud/`, no
+dialect-specific column types in `models/` without a fallback.

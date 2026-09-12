@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEFAULT_DEV_API_KEY = "default-dev-key"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -20,8 +22,9 @@ class Settings(BaseSettings):
 
     SSE_MAX_EVENTS: int = 100
 
-    API_KEY: str = "default-dev-key"
+    API_KEY: str = DEFAULT_DEV_API_KEY
     API_KEY_NAME: str = "X-API-KEY"
+    API_BASE_URL: str = "http://localhost:8000"
 
 
 settings = Settings()

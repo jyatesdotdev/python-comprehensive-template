@@ -2,8 +2,9 @@
 
 Data-access layer: plain async functions that take an explicit `AsyncSession`
 and operate on SQLAlchemy models. This layer exists so that *all* SQL lives in
-one place, callable from any entry point (API today, CLI or jobs tomorrow) —
-route handlers and commands must never build queries themselves.
+one place. The API calls CRUD today; jobs could later. This template's CLI is
+an HTTP client (`RESTClient`) and must **not** import `crud/` — keep that split
+so CLI and API cannot drift into two implementations.
 
 ## Contract every CRUD module follows (copy `item.py`)
 
@@ -23,6 +24,8 @@ route handlers and commands must never build queries themselves.
 - List functions return `(items, total)` tuples — the total count comes from
   a separate `select(func.count())` because the paginated page can't tell you
   how many rows exist overall, and the API's `PaginatedResponse` needs it.
+  The page query must `.order_by(...)` a unique key (here `Item.id`) so
+  OFFSET/LIMIT pages are stable.
 - Each write commits (`await db.commit()`) and `refresh`es the instance so
   server-generated fields (autoincrement `id`) are populated on the returned
   object. If you compose multiple CRUD calls into one transaction, that

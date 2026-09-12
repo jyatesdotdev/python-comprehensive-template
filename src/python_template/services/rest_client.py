@@ -1,4 +1,5 @@
 import asyncio
+import json
 from collections.abc import Callable
 from typing import Any
 
@@ -22,7 +23,7 @@ class RESTClientError(Exception):
 
 
 class RESTClient:
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, PLR0917
         self,
         base_url: str,
         transport: httpx.BaseTransport | None = None,
@@ -56,7 +57,13 @@ class RESTClient:
             try:
                 response: httpx.Response = await func(*args, **kwargs)
                 response.raise_for_status()
-                return response.json()
+                try:
+                    return response.json()
+                except json.JSONDecodeError as e:
+                    raise RESTClientError(
+                        message=f"Response was not JSON: {e}",
+                        status_code=response.status_code,
+                    ) from e
             except httpx.HTTPStatusError as e:
                 # Don't retry on most 4xx errors
                 if (

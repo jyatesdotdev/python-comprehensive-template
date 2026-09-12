@@ -4,12 +4,18 @@ from python_template.core.config import settings
 
 
 @pytest.mark.asyncio
-async def test_sse(client):
+async def test_sse_unauthorized(client):
+    response = await client.get("/api/v1/sse")
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_sse(auth_client):
     # Override settings for test speed
     original_max_events = settings.SSE_MAX_EVENTS
     settings.SSE_MAX_EVENTS = 2
     try:
-        async with client.stream("GET", "/api/v1/sse") as response:
+        async with auth_client.stream("GET", "/api/v1/sse") as response:
             assert response.status_code == 200
             assert "text/event-stream" in response.headers["content-type"]
 

@@ -8,7 +8,7 @@ A comprehensive Python project template showcasing best practices and common pat
 - **API (REST, SSE, WebSocket):** Built with [FastAPI](https://fastapi.tiangolo.com/).
 - **CRUD:** Database interactions with [SQLAlchemy](https://www.sqlalchemy.org/) and [SQLite](https://www.sqlite.org/).
 - **REST Client:** Asynchronous HTTP client using [HTTPX](https://www.python-httpx.org/).
-- **Linting & Formatting:** Managed by [Ruff](https://beta.ruff.rs/docs/).
+- **Linting & Formatting:** Managed by [Ruff](https://docs.astral.sh/ruff/).
 - **Testing:** Powered by [Pytest](https://docs.pytest.org/).
 
 ## Getting Started
@@ -16,7 +16,7 @@ A comprehensive Python project template showcasing best practices and common pat
 ### Prerequisites
 
 - Python 3.10+
-- [uv](https://github.com/astral-sh/uv) (recommended) or `pip`
+- [uv](https://github.com/astral-sh/uv)
 
 ### Installation
 
@@ -25,11 +25,8 @@ A comprehensive Python project template showcasing best practices and common pat
 git clone <repository-url>
 cd python-template
 
-# Install dependencies (using uv)
+# Install runtime + dev tools from the lockfile
 uv sync
-
-# Or using pip
-pip install -e .
 ```
 
 ### Usage
@@ -37,13 +34,14 @@ pip install -e .
 #### CLI
 
 ```bash
-python-template --help
+uv run python-template --help
 ```
 
 #### API Server
 
 ```bash
-fastapi dev src/python_template/api/main.py
+make dev
+# or: uv run python-template serve
 ```
 
 ## Adding New Features

@@ -23,15 +23,16 @@ behavior can't drift apart.
 - **Sub-apps:** related commands are grouped with `typer.Typer()` +
   `app.add_typer(sub, name="...")` (`items`, `db`). Add new command groups the
   same way rather than flat top-level commands.
-- The `serve` command's `0.0.0.0` default carries `# nosec B104`: bandit flags
-  binding all interfaces, but for a dev-server launcher it's intentional. Keep
-  the suppression (bandit needs `nosec`, not ruff's `noqa`) if you touch that
-  line.
+- **`serve` defaults to `127.0.0.1` with `reload=False`.** Binding all interfaces
+  is a Docker/compose concern (`0.0.0.0` in the image CMD), not the CLI default.
+  Use `--host 0.0.0.0` / `--reload` explicitly when you mean it. If you put a
+  literal `0.0.0.0` default back, bandit will flag it (`B104`) and needs
+  `# nosec B104` on that line — ruff `# noqa` does nothing for bandit.
 - **`db init`** imports Alembic *inside* the function (with `noqa: PLC0415`)
   deliberately — it keeps Alembic out of the import path of every other
   command, so `--help` and simple commands stay fast and don't require
   migration config to be importable.
 - Commands must not crash with tracebacks on expected failures (server down,
   bad key): catch, log, echo an error — the CLI is a demo of good UX too.
-- Failure exit codes are currently 0 even on error; if you improve this, use
-  `raise typer.Exit(code=1)`, and update `tests/test_cli.py` expectations.
+- Failed commands `raise typer.Exit(code=1)` after echoing the error. Keep
+  `tests/test_cli.py` pinned to non-zero exit codes on those paths.

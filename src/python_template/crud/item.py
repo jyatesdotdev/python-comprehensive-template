@@ -1,6 +1,5 @@
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from python_template.models.item import Item
 from python_template.schemas.item import ItemCreate, ItemUpdate
@@ -14,7 +13,7 @@ async def get_items(
     total = count_result.scalar_one()
 
     # Get items
-    result = await db.execute(select(Item).offset(skip).limit(limit))
+    result = await db.execute(select(Item).order_by(Item.id).offset(skip).limit(limit))
     items = result.scalars().all()
 
     return items, total

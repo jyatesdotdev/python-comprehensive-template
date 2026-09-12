@@ -9,7 +9,7 @@
 - [x] Implement RESTFUL client example
 - [x] Add comprehensive documentation on best practices and adding new features
 - [x] Add testing framework and example tests
-- [x] Add linting and formatting configuration (e.g., ruff, black)
+- [x] Add linting and formatting configuration (ruff)
 - [x] Add CI/CD configuration (e.g., GitHub Actions)
 - [x] Review existing code for improvements, update with new tasks if needed.
 - [x] Review documentation for improvements, update with new tasks if needed.

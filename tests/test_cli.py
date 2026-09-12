@@ -29,10 +29,10 @@ def test_info_command_verbose():
 
 def test_serve_command():
     with patch("uvicorn.run") as mock_run:
-        result = runner.invoke(app, ["serve", "--port", "8080", "--no-reload"])
+        result = runner.invoke(app, ["serve", "--port", "8080"])
         assert result.exit_code == 0
         mock_run.assert_called_once_with(
-            "python_template.api.main:app", host="0.0.0.0", port=8080, reload=False
+            "python_template.api.main:app", host="127.0.0.1", port=8080, reload=False
         )
 
 
@@ -51,6 +51,7 @@ def test_check_health_command():
 def test_check_health_command_error():
     respx.get("http://localhost:8000/health").mock(return_value=Response(500))
     result = runner.invoke(app, ["check-health"])
+    assert result.exit_code == 1
     assert "Error connecting to API" in result.stderr
 
 
@@ -115,3 +116,21 @@ def test_db_init_command():
             assert "Database initialized successfully." in result.stdout
             mock_upgrade.assert_called_once()
             mock_config.assert_called_once_with("alembic.ini")
+
+
+def test_db_init_command_error():
+    with patch("alembic.command.upgrade", side_effect=Exception("boom")):
+        with patch("alembic.config.Config"):
+            result = runner.invoke(app, ["db", "init"])
+    assert result.exit_code == 1
+    assert "Error:" in result.stderr
+
+
+@respx.mock
+def test_items_create_command_error():
+    respx.post("http://localhost:8000/api/v1/items/").mock(
+        return_value=Response(400, json={"detail": "bad"})
+    )
+    result = runner.invoke(app, ["items", "create", "X"])
+    assert result.exit_code == 1
+    assert "Error:" in result.stderr

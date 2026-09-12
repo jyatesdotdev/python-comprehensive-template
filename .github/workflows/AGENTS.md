@@ -19,7 +19,7 @@ CI even though the workflow doesn't mention coverage — don't "add coverage to
 CI" twice, and don't remove it from `pyproject.toml` thinking CI still has it.
 CI installs with `uv sync --frozen`: `--frozen` means the lockfile is
 authoritative, so any dependency change must be accompanied by a regenerated
-`uv.lock` (`uv lock`) or CI fails at install. Test/lint tooling lives in the
+`uv.lock` (`uv lock`) or CI fails at install. Test/lint/security tooling (pytest, ruff, bandit, pip-audit) lives in the
 `[dependency-groups] dev` group, which `uv sync` includes by default — the
 production Docker image opts out with `--no-dev`.
 
@@ -32,19 +32,24 @@ production Docker image opts out with `--no-dev`.
   full JSON report artifact, then again with `-ll -ii` as the actual gate
   (fail on medium+ severity, high+ confidence findings). Don't "deduplicate"
   the two steps — they serve different purposes.
-- Suppressing a bandit finding in code requires `# nosec B###` on the line
-  (see the `0.0.0.0` bind in `cli/main.py`); ruff `# noqa` does nothing for
-  bandit.
-- pip-audit gates on vulnerable dependencies; if it fails after a dependency
-  bump, the fix is choosing a patched version, not pinning the scan.
+- Suppressing a bandit finding in code requires `# nosec B###` on the line;
+  ruff `# noqa` does nothing for bandit. Bandit and pip-audit live in the
+  `dev` group so `make security` matches CI (`uv run bandit` / `uv run pip-audit`).
+- pip-audit scans the locked **runtime** graph (`uv export --frozen --no-dev
+  --no-emit-project`, then `pip-audit -r ... --no-deps --disable-pip`) so it
+  does not re-resolve or install the local editable package. If it fails after
+  a dependency bump, the fix is choosing a patched version, not pinning the scan.
+- Trivy fs scan uses `exit-code: "1"` and `severity: CRITICAL,HIGH` so HIGH+
+  findings fail the job. SARIF upload is `if: always()` so results still land
+  in the Security tab when the gate fails.
 
 ## Editing rules
 
-Actions are pinned to moving major tags (`@v7`, `@v6`), except trivy-action,
-which is pinned to an exact release because it publishes no moving major tag
-(it was previously `@master`, i.e. unpinned — don't go back to that). When
-bumping, verify the tag actually exists (`gh api repos/<owner>/<repo>/git/
-matching-refs/tags/v<N>`) rather than assuming; majors move at different
-speeds per action. Workflows run on pushes and PRs to `main` only — new
-long-lived branches need to be added to the `branches:` filters or they get
-no CI.
+Actions are pinned to **commit SHAs** with the human tag in a comment
+(`uses: actions/checkout@<sha> # v7`). Do not go back to floating major tags
+or to trivy-action `@master`. Dependabot (`uv`, `github-actions`, `docker`,
+weekly Monday) is what moves those SHAs — when bumping by hand, take the SHA
+from `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`. `ci.yml` sets
+`permissions: contents: read` so the default GITHUB_TOKEN cannot write.
+Workflows run on pushes and PRs to `main` only — new long-lived branches need
+to be added to the `branches:` filters or they get no CI.

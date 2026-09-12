@@ -1,9 +1,9 @@
 # AGENTS.md — api/v1/
 
 Version-1 routers. Each file is one POC/feature area with its own
-`router = APIRouter()`; `api/main.py` mounts them under `/api/v1` and decides
-which get API-key protection (`items` yes, `ws`/`sse` no — the realtime demos
-are left open so they're trivially testable with curl/browser).
+`router = APIRouter()`; `api/main.py` mounts them under `/api/v1` and applies
+API-key protection on `items`, `sse`, and `ws`. Realtime demos take the same
+key as HTTP (`X-API-KEY`, or `?api_key=` on WebSocket for browser clients).
 
 ## items.py — the canonical CRUD router
 
@@ -42,8 +42,9 @@ error. SSE frames must keep the exact `event: ...\ndata: ...\n\n` wire format.
 limitation, meaning broadcast only reaches clients on the *same worker
 process*. That's fine for the demo; a real multi-worker deployment needs a
 pub/sub backend (e.g. Redis), which is out of scope here. The
-`WebSocketDisconnect` handler must always remove the socket from the manager,
-or broadcasts start failing on dead connections.
+`WebSocketDisconnect` handler must always remove the socket from the manager.
+`broadcast` iterates a copy and drops sockets whose `send_text` fails, so one
+dead connection cannot abort the rest of the fan-out.
 
 ## Adding a new router
 

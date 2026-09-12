@@ -5,7 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from python_template.api import exceptions
-from python_template.api.dependencies import get_api_key
+from python_template.api.dependencies import (
+    api_key_is_template_default,
+    get_api_key,
+    require_ws_api_key,
+)
 from python_template.api.v1 import items, sse, ws
 from python_template.core.config import settings
 from python_template.core.logger import logger, setup_logging
@@ -16,10 +20,14 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup tasks
+    if not settings.API_KEY:
+        logger.warning("API_KEY is empty; authenticated routes will always 403")
+    elif api_key_is_template_default():
+        logger.warning(
+            "API_KEY is the template default; override it before any non-local deploy"
+        )
     logger.info("Starting up API...")
     yield
-    # Shutdown tasks
     logger.info("Shutting down API...")
 
 
@@ -34,7 +42,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    # False while CORS_ORIGINS may be ["*"]: credentials + wildcard reflects Origin.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -49,8 +58,18 @@ app.include_router(
     tags=["items"],
     dependencies=[Depends(get_api_key)],
 )
-app.include_router(ws.router, prefix="/api/v1", tags=["websocket"])
-app.include_router(sse.router, prefix="/api/v1", tags=["sse"])
+app.include_router(
+    ws.router,
+    prefix="/api/v1",
+    tags=["websocket"],
+    dependencies=[Depends(require_ws_api_key)],
+)
+app.include_router(
+    sse.router,
+    prefix="/api/v1",
+    tags=["sse"],
+    dependencies=[Depends(get_api_key)],
+)
 
 
 @app.get("/")

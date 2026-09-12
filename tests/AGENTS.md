@@ -5,12 +5,15 @@ and two settings there shape how you write tests:
 
 - `asyncio_mode = "auto"` — `async def` tests just work; you'll see
   `@pytest.mark.asyncio` on older tests but it is not required for new ones.
-- `addopts` enforces **coverage ≥ 80% of `src/python_template`**. This means
-  an untested new module can make the whole suite fail even though every test
-  passes — if `make test` fails with a coverage message, add tests, don't
-  lower the threshold.
+- `addopts` enforces **coverage ≥ 80% of `python_template`**. `[tool.coverage.run]`
+  sets `concurrency = ["greenlet", "thread"]` so SQLAlchemy asyncio work is
+  counted — do not remove it or CRUD/router bodies look uncovered. An untested
+  new module can make the whole suite fail even though every test passes — if
+  `make test` fails with a coverage message, add tests, don't lower the threshold.
 
-Run with `make test` (or `uv run pytest tests/test_x.py -k name` for one test).
+Run with `make test` (or `uv run pytest tests/test_x.py -k name --no-cov` for
+one test). `addopts` always applies `--cov-fail-under=80` against the whole
+package, so a targeted run without `--no-cov` fails even when the test passes.
 
 ## How things are tested here (match the existing style)
 
@@ -26,21 +29,23 @@ Run with `make test` (or `uv run pytest tests/test_x.py -k name` for one test).
   via mocks in `test_cli.py`. Because the DB file is shared across the
   session, don't assert exact row counts (`total >= 1`, not `total == 1`);
   other tests may have written rows.
-- **Auth:** protected endpoints need
-  `headers={settings.API_KEY_NAME: settings.API_KEY}` — read both from
-  `settings`, never hardcode `"X-API-KEY"`/`"default-dev-key"`, so a config
-  change can't silently break the suite. `test_unauthorized` exists to pin
-  the 403 behavior; keep an equivalent when adding protected routers.
+- **Auth:** use the `auth_client` fixture in `conftest.py` for protected
+  routes. It reads `{settings.API_KEY_NAME: settings.API_KEY}` — never hardcode
+  `"X-API-KEY"`/`"default-dev-key"`. The shared `client` fixture stays
+  unauthenticated. Pin missing-header **and** wrong-key 403s (`test_unauthorized`,
+  `test_wrong_api_key`); keep equivalents when adding protected routers.
+- **WebSocket:** Starlette `TestClient.websocket_connect` is the remaining
+  sync client — httpx has no WS transport here. Pass `headers=` with the API
+  key (or `?api_key=`). Unauthorized connects must raise `WebSocketDisconnect`.
 - **CLI:** use `typer.testing.CliRunner().invoke(app, [...])` and assert on
-  `result.stdout` / `result.stderr` / `exit_code`. Mock the boundary
-  (`respx` for HTTP, `unittest.mock.patch` for uvicorn/alembic) — CLI tests
-  verify wiring and output, not the server underneath.
-- The shared `client` fixture in `conftest.py` is intentionally
-  **unauthenticated**; build your own client with headers for protected
-  routes (as `test_items.py` does).
+  `result.stdout` / `result.stderr` / `result.exit_code`. Failed commands must
+  exit `1`. Mock the boundary (`respx` for HTTP, `unittest.mock.patch` for
+  uvicorn/alembic) — CLI tests verify wiring and output, not the server
+  underneath.
 
 ## Lint notes
 
-`tests/*` has ruff per-file-ignores for `PLR2004` (magic values) and `S101`
-(assert) — literal numbers and bare asserts are fine in tests. Everything
-else (import order, naming, pyupgrade) still applies.
+`tests/*` has a ruff per-file-ignore for `PLR2004` (magic values) — literal
+numbers are fine in tests. Everything else (import order, naming, pyupgrade)
+still applies. There is no ruff `S` (bandit-in-ruff) select; security lint is
+Bandit via `make security` / `security.yml`.

@@ -15,6 +15,7 @@ dependencies = [
     "alembic>=1.13.0",
     "python-dotenv>=1.0.0",
     "greenlet>=3.4.0",
+    "uvicorn>=0.27.0",
 ]
 
 [dependency-groups]
@@ -24,6 +25,8 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "respx>=0.23.1",
     "ruff>=0.8.0",
+    "bandit>=1.8.0",
+    "pip-audit>=2.7.0",
 ]
 
 [project.scripts]
@@ -42,10 +45,16 @@ select = ["E", "F", "I", "N", "UP", "PL", "RUF"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["PLR2004", "S101"]
+"tests/*" = ["PLR2004"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_mode = "auto"
-addopts = "--cov=src/python_template --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=python_template --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+source_pkgs = ["python_template"]
+# SQLAlchemy asyncio runs query code in greenlets; without this the CRUD/router
+# bodies look uncovered even though the tests hit them.
+concurrency = ["greenlet", "thread"]

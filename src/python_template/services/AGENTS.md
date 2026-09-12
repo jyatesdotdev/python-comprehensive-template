@@ -10,8 +10,9 @@ needing a second codebase.
 - **Why it exists at all** (instead of raw httpx calls): it centralizes the
   cross-cutting client concerns — retries, backoff, error normalization,
   timeouts — so callers write `await client.get("/path")` and get either
-  parsed JSON or a single, typed `RESTClientError`. Callers must never need
-  to import httpx.
+  parsed JSON or a single, typed `RESTClientError`. Non-JSON 2xx bodies become
+  `RESTClientError` (not a raw `JSONDecodeError`) and are not retried.
+  Callers must never need to import httpx.
 - **Retry policy is deliberate:** 4xx responses are *not* retried (the
   request itself is wrong; retrying can't fix it and may duplicate writes) —
   except **429**, which is the server saying "try later". 5xx, network

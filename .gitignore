@@ -160,3 +160,4 @@ cython_debug/
 
 # Project specific
 *.db
+requirements-audit.txt

@@ -42,6 +42,8 @@ test.db
 # Documentation (not needed at runtime)
 docs
 *.md
+# Hatchling needs README.md because pyproject.toml sets readme = "README.md"
+!README.md
 
 # IDE / editor
 .vscode

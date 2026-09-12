@@ -18,13 +18,15 @@ settings should monkeypatch `settings` attributes rather than the environment.
 Rules when adding a setting:
 - Give it a safe default that works out of the box with zero setup — the
   template must run immediately after `uv sync` (that's why SQLite and
-  `default-dev-key` are defaults; they are dev conveniences, not production
-  recommendations).
+  `DEFAULT_DEV_API_KEY` are defaults; they are dev conveniences, not production
+  recommendations). The API lifespan warns if the key is still that default.
 - Mirror it in `.env.example` with a one-line comment.
 - `SSE_MAX_EVENTS` exists so the SSE demo stream *terminates* — tests and some
   transports hang on infinite streams. Don't remove it.
 - `API_KEY` / `API_KEY_NAME` drive the auth POC in `api/dependencies.py`; the
   CLI reads the same settings so client and server always agree on the key.
+- `API_BASE_URL` is the CLI's default when talking to a running API
+  (`check-health`, `items`). Don't hardcode `http://localhost:8000` in commands.
 
 ## logger.py — why it exists
 

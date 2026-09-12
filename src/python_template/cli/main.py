@@ -38,15 +38,14 @@ def info(
     typer.echo("Python Template CLI Tool")
     if verbose:
         logger.debug("Verbose output enabled.")
-        typer.echo("Version: 0.1.0")
-        typer.echo("Author: Gemini CLI")
+        typer.echo(f"Version: {settings.VERSION}")
 
 
 @app.command()
 def serve(
-    host: str = typer.Option("0.0.0.0", help="The host to bind the server to."),  # nosec B104
+    host: str = typer.Option("127.0.0.1", help="The host to bind the server to."),
     port: int = typer.Option(8000, help="The port to bind the server to."),
-    reload: bool = typer.Option(True, help="Enable auto-reload on code changes."),
+    reload: bool = typer.Option(False, help="Enable auto-reload on code changes."),
 ):
     """
     Start the FastAPI server.
@@ -58,7 +57,7 @@ def serve(
 @app.command()
 def check_health(
     base_url: str = typer.Option(
-        "http://localhost:8000", help="The base URL of the API to check."
+        settings.API_BASE_URL, help="The base URL of the API to check."
     ),
 ):
     """
@@ -74,6 +73,7 @@ def check_health(
         except Exception as e:
             logger.error(f"Health check failed: {e}")
             typer.echo(f"Error connecting to API: {e}", err=True)
+            raise typer.Exit(code=1) from e
 
     asyncio.run(_check())
 
@@ -87,7 +87,7 @@ def items_create(
     name: str = typer.Argument(..., help="The name of the item."),
     description: str | None = typer.Option(None, help="The description of the item."),
     base_url: str = typer.Option(
-        "http://localhost:8000", help="The base URL of the API."
+        settings.API_BASE_URL, help="The base URL of the API."
     ),
 ):
     """
@@ -104,6 +104,7 @@ def items_create(
         except Exception as e:
             logger.error(f"Item creation failed: {e}")
             typer.echo(f"Error: {e}", err=True)
+            raise typer.Exit(code=1) from e
 
     asyncio.run(_create())
 
@@ -111,7 +112,7 @@ def items_create(
 @items_app.command("list")
 def items_list(
     base_url: str = typer.Option(
-        "http://localhost:8000", help="The base URL of the API."
+        settings.API_BASE_URL, help="The base URL of the API."
     ),
 ):
     """
@@ -136,6 +137,7 @@ def items_list(
         except Exception as e:
             logger.error(f"Fetching items failed: {e}")
             typer.echo(f"Error: {e}", err=True)
+            raise typer.Exit(code=1) from e
 
     asyncio.run(_list())
 
@@ -163,6 +165,7 @@ def db_init():
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
         typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1) from e
 
 
 if __name__ == "__main__":

@@ -16,11 +16,12 @@ CORS_ORIGINS: list[str] = ["*"]
 
 ### API Key Authentication
 
-The `items` endpoints are protected by an API Key.
+`items`, `sse`, and `ws` are protected by an API key. `/` and `/health` are not.
 - Header Name: `X-API-KEY` (configurable via `API_KEY_NAME`)
 - Value: `default-dev-key` (configurable via `API_KEY`)
+- WebSocket also accepts `?api_key=` because browsers cannot set WS headers.
 
-To protect a new router, add the `get_api_key` dependency:
+To protect a new HTTP router, add the `get_api_key` dependency:
 
 ```python
 from fastapi import Depends
@@ -47,20 +48,32 @@ app.include_router(
 
 ### Pagination
 
-Use the `PaginatedResponse` generic schema for list endpoints:
+Use the `PaginatedResponse` generic schema for list endpoints. Copy the
+`Query` constraints from `items.py` — `limit >= 1` prevents ZeroDivisionError
+in page math; `le=1000` caps response size.
 
 ```python
+from math import ceil
+
+from fastapi import Query
+
 from python_template.schemas.common import PaginatedResponse
 
+
 @router.get("/", response_model=PaginatedResponse[MySchema])
-async def read_items(skip: int = 0, limit: int = 100):
-    # ... CRUD logic returns (items, total_count)
+async def read_items(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+):
+    items, total = await crud.get_items(db, skip=skip, limit=limit)
+    page = (skip // limit) + 1
+    pages = ceil(total / limit) if total > 0 else 0
     return PaginatedResponse(
         items=items,
         total=total,
-        page=(skip // limit) + 1,
+        page=page,
         size=limit,
-        pages=ceil(total / limit)
+        pages=pages,
     )
 ```
 
@@ -92,7 +105,7 @@ logger.debug("Debug message (only shown if LOG_LEVEL is DEBUG)")
 
 ## Error Handling in API
 
-1. **Use `APIError`:** Raise `APIError` in your routers or CRUD logic for controlled error responses.
+1. **Use `APIError`:** Raise `APIError` in routers (not in `crud/`) for controlled error responses. CRUD returns `None`/`False` for missing rows; the router translates that to 404.
 2. **Global Handler:** All unhandled exceptions are caught by the global handler, logged, and return a 500 Internal Server Error.
 
 ```python
@@ -109,9 +122,11 @@ FastAPI allows you to define tasks to be run after returning a response.
 ```python
 from fastapi import BackgroundTasks
 
+
 def my_task(data: str):
     # Do something
     pass
+
 
 @router.post("/")
 async def my_endpoint(background_tasks: BackgroundTasks):

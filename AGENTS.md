@@ -13,27 +13,32 @@ so consistency and simplicity beat sophistication.
 
 ```bash
 uv sync                 # install, incl. dev tools (uv is the package manager; do not use pip/poetry)
-make check              # lint + tests — run this before declaring any change done
+make check              # lint + format --check + tests — run this before declaring any change done
 make test               # uv run pytest (coverage gate included, see below)
-make lint               # ruff check .
-make format             # ruff format .
+make lint               # uv run ruff check . && uv run ruff format --check .
+make format             # uv run ruff format .
+make security           # bandit + pip-audit (matches security.yml gates)
 make dev                # run the API with hot reload
 ```
 
 ## Hard CI gates (changes fail CI if these break)
 
 1. **Coverage ≥ 80%** — enforced via `addopts` in `pyproject.toml`
-   (`--cov-fail-under=80`). New code without tests fails the suite locally too.
+   (`--cov-fail-under=80`). Keep `[tool.coverage.run] concurrency = ["greenlet",
+   "thread"]` so SQLAlchemy asyncio bodies are counted. New code without tests
+   fails the suite locally too.
 2. **Ruff lint AND format** — CI runs both `ruff check .` and
    `ruff format --check .`. Always run `make format` after editing.
-3. **Bandit (security.yml)** — fails on medium+ severity findings in `src/`.
-   Bandit is a *separate tool from ruff*: bandit suppressions use `# nosec B###`,
-   ruff suppressions use `# noqa: RULE`. They are not interchangeable — commit
-   history shows a `noqa S104` that had to be changed to `nosec B104` because
-   bandit ignores `noqa`. The `0.0.0.0` default in the CLI `serve` command is
-   intentionally suppressed this way (it's a dev server binding).
-4. **pip-audit + trivy** — dependency/vuln scans. Adding a dependency with a
-   known CVE fails the security workflow.
+3. **Bandit (security.yml)** — fails on medium+ severity **and** high+ confidence
+   findings in `src/` (`bandit -r src/ -ll -ii`). Bandit is a *separate tool from
+   ruff*: bandit suppressions use `# nosec B###`, ruff suppressions use
+   `# noqa: RULE`. They are not interchangeable — commit history shows a
+   `noqa S104` that had to be changed to `nosec B104` because bandit ignores
+   `noqa`. `make security` runs the same bandit gate locally.
+4. **pip-audit + trivy** — pip-audit scans the *locked runtime* graph
+   (`uv export --frozen --no-dev --no-emit-project`). Adding a runtime dependency
+   with a known CVE fails the security workflow. Trivy fs scan fails the job on
+   CRITICAL/HIGH (`exit-code: "1"`) and still uploads SARIF.
 
 ## Architecture (dependency direction is a rule, not a suggestion)
 

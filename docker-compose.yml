@@ -1,15 +1,22 @@
+# Dev stack only — not a production compose file.
+# fastapi dev + source bind-mount are for local iteration.
 services:
   api:
     build: .
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - .env.example
     volumes:
       - .:/app
+      # Keep the image venv when bind-mounting the source tree.
+      - app-venv:/app/.venv
     command: fastapi dev src/python_template/api/main.py --host 0.0.0.0 --port 8000
 
   db_viewer:
-    image: adminer
+    image: adminer:5
     ports:
       - "8080:8080"
+
+volumes:
+  app-venv:
